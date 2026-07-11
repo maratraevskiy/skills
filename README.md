@@ -6,14 +6,32 @@ It helps the agent create and maintain one `.kanban/` directory at the level-1 w
 
 ```text
 .kanban/01_backlog/
-.kanban/02_progress/
-.kanban/03_review/
-.kanban/04_done/
+.kanban/02_planning/
+.kanban/03_progress/
+.kanban/04_review/
+.kanban/05_done/
 ```
 
 The board should not be nested inside a repository, app, package, or other subfolder.
 
-It also forces an explicit implementation gate: the agent may plan, document, and manage tasks, but it must not implement a task until the user clearly says to start implementation.
+## The folder is the permission
+
+A task's status folder defines what the agent may do with it:
+
+| Status | Agent may |
+|---|---|
+| `01_backlog` | Produce all pre-implementation artifacts, same ceiling as `02_planning`; tasks here await triage. |
+| `02_planning` | Produce all pre-implementation artifacts: plans, research, drafts, brainstorming, implementation specs. |
+| `03_progress` | Implement — only after an explicit implement command. |
+| `04_review` | Verify and polish: log feedback, and comment, fix, or refine the existing implementation after an explicit command. New scope goes back to `03_progress`. |
+| `05_done` | Answer questions from task context. |
+
+Two rules make the statuses trustworthy:
+
+1. **Only the user moves tasks.** The agent runs `mv` between status folders only on an explicit user command. It may observe that a task looks ready for the next status, but it never moves tasks on its own and never asks a yes/no move question.
+2. **Implementation is double-gated.** Writing code requires both a task in `03_progress` (or polish work in `04_review`) *and* an explicit command like `implement this`. Status alone is not consent, and neither are words like `continue` or `proceed`.
+
+New tasks are always created in `01_backlog` with a readme and an `initial-implementation-plan.md`. Even `create a task for X and implement it` only creates the task — implementation waits until the user moves it forward and gives the command.
 
 ## Install
 
@@ -37,6 +55,17 @@ mkdir -p .agents/skills
 cp -r kanban-manager/skills/kanban-manager .agents/skills/
 ```
 
+## Migrating from v1 boards
+
+Version 2.0.0 adds the `02_planning` status and renumbers the downstream folders. When the agent detects the old 4-folder layout (`01_backlog`, `02_progress`, `03_review`, `04_done`), it offers a one-shot migration and runs it only after your confirmation:
+
+```bash
+mv .kanban/04_done .kanban/05_done
+mv .kanban/03_review .kanban/04_review
+mv .kanban/02_progress .kanban/03_progress
+mkdir -p .kanban/02_planning
+```
+
 ## Usage
 
 Try prompts like:
@@ -44,19 +73,18 @@ Try prompts like:
 ```text
 Initialize the kanban board.
 Create a task for adding OAuth login.
-Yes, create the task, but wait for my explicit approval before implementing it.
 Yes, help me brainstorm the implementation details.
-Continue this task, but only plan it for now.
-If you are not sure whether I want planning or implementation, ask me.
-For this task, keep separate implementation docs.
-Plan the implementation for adding OAuth login.
+Move the OAuth task to planning.
+Draft the implementation plan for the OAuth task.
+Move the OAuth task to progress.
+Implement the OAuth task.
+Move it to review.
+Polish the error messages on the OAuth task.
 What is the status of my kanban tasks?
-Move this task to review.
+Migrate my board to the new layout.
 ```
 
-After creating a task, the skill can offer a one-question-at-a-time brainstorming flow and compile the answers into `implementation-spec.md`.
-
-For both new and existing tasks, the skill waits for an explicit implementation command before writing code or otherwise executing implementation work, even if plans or specs already exist.
+After creating a task, the skill can offer a one-question-at-a-time brainstorming flow and compile the answers into `implementation-spec.md` (available while the task is in backlog or planning).
 
 If user intent is ambiguous, such as whether `continue`, `proceed`, or `work on this` means planning or implementation, the skill asks instead of guessing.
 
