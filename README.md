@@ -1,96 +1,54 @@
 # Kanban Manager Skill
 
-A Codex skill for managing project work with a filesystem-based Kanban board.
-
-It helps the agent create and maintain one `.kanban/` directory at the level-1 workspace root, with task folders organized by status:
+A Codex skill for managing project work in a filesystem Kanban board at `kanban/`.
 
 ```text
-.kanban/01_backlog/
-.kanban/02_planning/
-.kanban/03_progress/
-.kanban/04_review/
-.kanban/05_done/
+kanban/
+├── 01-backlog/     ← create numbered task folders with only readme.md
+├── 02-planning/    ← task documents and one implementation-plan.md
+├── 03-progress/    ← implementation after an explicit command
+├── 04-blocked/     ← waiting work
+├── 05-review/      ← verification and feedback
+├── 06-done/        ← completed history
+└── 07-cancelled/   ← cancelled history
 ```
 
-The board should not be nested inside a repository, app, package, or other subfolder.
+Each task is a numbered folder such as `01-add-oauth`. The agent checks every status folder before creation and uses the next unused number. Task-specific material stays in the task folder; a shared source spec may live in `docs/specs/` or `docs/` and is linked from the task.
 
-## The folder is the permission
+Only you move tasks, either manually or by an explicit move command. Planning is allowed only in `02-planning`; it uses one evolving `implementation-plan.md`. Implementation requires both `03-progress` and an explicit command such as `implement this`.
 
-A task's status folder defines what the agent may do with it:
+## Matt Pocock skills
 
-| Status | Agent may |
-|---|---|
-| `01_backlog` | Produce all pre-implementation artifacts, same ceiling as `02_planning`; tasks here await triage. |
-| `02_planning` | Produce all pre-implementation artifacts: plans, research, drafts, brainstorming, implementation specs. |
-| `03_progress` | Implement — only after an explicit implement command. |
-| `04_review` | Verify and polish: log feedback, and comment, fix, or refine the existing implementation after an explicit command. New scope goes back to `03_progress`. |
-| `05_done` | Answer questions from task context. |
+When [Matt Pocock's skills](https://github.com/mattpocock/skills) are installed and configured to use `kanban/` as their local tracker:
 
-Two rules make the statuses trustworthy:
+- Run `$to-spec` to create a canonical source spec at `docs/specs/<task-id>-<slug>.md` and a linked, readme-only backlog task.
+- Run `$to-tickets` to split that spec into numbered, linked backlog tasks with dependency records.
 
-1. **Only the user moves tasks.** The agent runs `mv` between status folders only on an explicit user command. It may observe that a task looks ready for the next status, but it never moves tasks on its own and never asks a yes/no move question.
-2. **Implementation is double-gated.** Writing code requires both a task in `03_progress` (or polish work in `04_review`) *and* an explicit command like `implement this`. Status alone is not consent, and neither are words like `continue` or `proceed`.
-
-New tasks are always created in `01_backlog` with a readme and an `initial-implementation-plan.md`. Even `create a task for X and implement it` only creates the task — implementation waits until the user moves it forward and gives the command.
+The Kanban skill remains usable without those optional skills.
 
 ## Install
-
-### Option 1: CLI Install
-
-Use `npx skills` to install the skill directly:
 
 ```bash
 npx skills add maratraevskiy/kanban-manager
 ```
 
-This installs the skill into your `.agents/skills/` directory.
+Or copy `skills/kanban-manager` into your project's `.agents/skills/` directory.
 
-### Option 2: Clone and Copy
+## Migrate an existing board
 
-Clone the repo and copy the skill folder manually:
-
-```bash
-git clone https://github.com/maratraevskiy/kanban-manager.git
-mkdir -p .agents/skills
-cp -r kanban-manager/skills/kanban-manager .agents/skills/
-```
-
-## Migrating from v1 boards
-
-Version 2.0.0 adds the `02_planning` status and renumbers the downstream folders. When the agent detects the old 4-folder layout (`01_backlog`, `02_progress`, `03_review`, `04_done`), it offers a one-shot migration and runs it only after your confirmation:
-
-```bash
-mv .kanban/04_done .kanban/05_done
-mv .kanban/03_review .kanban/04_review
-mv .kanban/02_progress .kanban/03_progress
-mkdir -p .kanban/02_planning
-```
+The agent first inspects the old board and shows the exact rename map. It performs no migration until you explicitly approve it. Migration renames `.kanban/` to `kanban/`, maps legacy status names to the seven current folders, and preserves all task folders.
 
 ## Usage
-
-Try prompts like:
 
 ```text
 Initialize the kanban board.
 Create a task for adding OAuth login.
-Yes, help me brainstorm the implementation details.
-Move the OAuth task to planning.
-Draft the implementation plan for the OAuth task.
-Move the OAuth task to progress.
-Implement the OAuth task.
-Move it to review.
-Polish the error messages on the OAuth task.
-What is the status of my kanban tasks?
-Migrate my board to the new layout.
+Move 01-add-oauth to planning.
+Create an implementation plan from docs/specs/01-add-oauth.md.
+Move 01-add-oauth to progress.
+Implement 01-add-oauth.
+Move 01-add-oauth to review.
 ```
-
-After creating a task, the skill can offer a one-question-at-a-time brainstorming flow and compile the answers into `implementation-spec.md` (available while the task is in backlog or planning).
-
-If user intent is ambiguous, such as whether `continue`, `proceed`, or `work on this` means planning or implementation, the skill asks instead of guessing.
-
-When asked, the skill keeps implementation details in separate task files such as `initial-implementation-plan.md`, `updates-plan.md`, and `final-implementation.md` while leaving `readme.md` as the concise task control file.
-
-In Plan Mode, planning prompts include the Kanban task action: create a new task with `initial-implementation-plan.md` when no task exists, or update the matching task with `updates-plan.md`.
 
 ## License
 
