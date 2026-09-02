@@ -51,6 +51,14 @@ When [Matt Pocock's skills](https://github.com/mattpocock/skills) are installed
 and configured to use `kanban/` as their local tracker, use `$to-spec` for the
 canonical source spec and `$to-tickets` to split it into linked backlog tasks.
 
+## Tududi overview
+
+`tududi` keeps a repository's filesystem Kanban work reflected in one bound
+[Tududi](https://tududi.com/) task, while preserving the local board as the
+execution record. It can also turn independently deliverable commitments from
+[Anarlog](https://anarlog.so/) meeting sessions into proposed Tududi work items.
+It never creates an ambiguous destination task or changes local Kanban status.
+
 ## License
 
 MIT
