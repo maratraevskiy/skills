@@ -1,8 +1,8 @@
 # Binding a repository to Tududi
 
-Create `.agents/tududi.json` only after the user has selected the corresponding
-Tududi task, or approved creating one. The file contains no credentials and
-may be committed when repository conventions allow it.
+Create `.agents/tududi.json` after an unambiguous existing Tududi task is found
+or the user has approved creating one. The file contains no credentials and may
+be committed when repository conventions allow it.
 
 ```json
 {
@@ -24,10 +24,11 @@ change and are not a reliable binding.
 2. List candidate Tududi tasks and projects from the configured instance.
    Search by an existing repository path, remote, task UID, or unambiguous
    repository name; read every plausible candidate.
-3. Present the candidate and its project to the user when more than one match
-   remains. Do not bind by title alone.
-4. When no task exists, propose an outcome-oriented repository task and its
-   intended project. Create it only after the user approves, then record the
+3. Bind one unambiguous existing match without another confirmation. Present
+   candidates when more than one plausible match remains; do not bind by title
+   alone.
+4. When no task exists, propose an outcome-oriented Project Roll-up and its
+   destination for one confirmation. After approval, create it and record the
    returned UID in the binding.
 
 The task is a repository roll-up, not a clone of every local Kanban card. Keep
@@ -38,8 +39,9 @@ project and the user has requested the correction.
 
 `token_env` defaults to Tududi's documented `TUDUDI_API_TOKEN`. Read that
 variable; never print its value or write it to the repository. `base_url`
-identifies the target local or hosted Tududi instance. Confirm that it is the
-intended instance before the first write in a session.
+identifies the target local or hosted Tududi instance. Reuse an established
+configuration without per-session confirmation. Ask when the destination is
+missing, changed, or ambiguous.
 
 ## Optional macOS shell setup
 

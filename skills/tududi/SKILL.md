@@ -1,57 +1,55 @@
 ---
 name: tududi
-description: Synchronize a repository's Kanban work and Anarlog commitments with Tududi. Use when binding a repository to its roll-up task, syncing it, or publishing Anarlog-derived work.
+description: Create and update high-level tasks in a Tududi installation. Use for project roll-ups, independently deliverable outcomes, task synchronization, and relevant tag management; use anarlog-updates for meeting transcript imports.
 ---
 
-# Tududi project sync
+# Tududi high-level tasks
 
-Tududi is a shared **projection**: one bound task holds a repository's current
-state and short audit trail. The filesystem Kanban board remains the execution
-record. Anarlog sessions are evidence for independently deliverable Tududi
-work items, whether or not they belong to the current repository.
+Tududi holds high-level work: a bound **Project Roll-up** summarizes a project's
+state, while an **Outcome Task** represents an independently deliverable result.
+Local implementation steps remain in the project's own task system.
 
 ## Establish the binding
 
 Read `.agents/tududi.json` when it exists. Its non-secret `task_uid` identifies
-the one roll-up task for this repository; `project_uid` is optional and records
-its intended Tududi project.
+the Project Roll-up; `project_uid` optionally records its Tududi project.
 
 Read [the setup reference](references/setup.md) when the binding is absent or
-incomplete, when its task must be found or created, or when authentication is
-not available. Obtain the bearer token from `token_env` (default
-`TUDUDI_API_TOKEN`).
+incomplete or authentication is unavailable. Obtain the bearer token from
+`token_env` (default `TUDUDI_API_TOKEN`).
 
-**Complete when:** the roll-up task is known, or the ownership decision needed
-to bind it has been reported without creating an ambiguous task.
+**Complete when:** an existing binding or one unambiguous match is selected, or
+the single ownership choice required to create or disambiguate it is reported.
 
-## Gather the sources
+## Choose the high-level task
 
-If the repository has `kanban/`, load `kanban_manager` and follow its
-task-selection and status-permission rules. Do not create or move local tasks.
-When no board exists, sync only repository evidence explicitly available to
-you.
+For a bare `$tududi` invocation, synchronize the bound Project Roll-up. An
+explicit request may create or update an Outcome Task without a repository
+binding. Search by binding, source links, project, and outcome terms; read every
+plausible match before deciding to update or create. Preserve human-authored
+context and established assignment.
 
-Read the bound Tududi task before changing it. Explicit human decisions in
-Tududi win conflicts; preserve useful Tududi-only context.
+Read the target task and available project evidence before changing it. Ask
+only when multiple plausible matches or destinations remain. A request to
+create or update a task authorizes the necessary task reads and writes within
+the established instance; it does not need a separate confirmation per API
+call.
 
-For an Anarlog session, read [the Anarlog reference](references/anarlog.md).
-It owns session selection, the canonical archive, candidate extraction,
-deduplication, and portable work-item specifications.
+**Complete when:** one target task is matched or the one unresolved ownership
+choice is reported.
 
-**Complete when:** the relevant local state, current Tududi records, and any
-session evidence have been compared.
+## Write the task
 
-## Project repository state
+Keep title, project assignment, and status unchanged unless the user requests
+their change. A bare invocation may update the Project Roll-up's summary, next
+action, and tags even when local work appears complete. Prefer the Git remote
+as repository identity, falling back to the opened workspace path.
 
-Keep the roll-up title and Tududi status unchanged unless the user explicitly
-asks to change them. Prefer the Git remote as repository identity, falling back
-to a local path only when no remote exists.
-
-Replace the compact snapshot, then append one concise dated history entry only
-when a meaningful state change occurred:
+Use a concise Outcome Task description or, for a Project Roll-up, replace its
+compact snapshot and append one dated history entry only for meaningful change:
 
 ```text
-Repository: <remote or local path>
+Repository: <remote or workspace path>
 Kanban: <active task/status, or brief aggregate>
 Current focus: <outcome>
 Next action: <one concrete action>
@@ -61,29 +59,35 @@ History:
 - <YYYY-MM-DD>: <meaningful delta>; <source path or task link>
 ```
 
-Keep history concise and append-only. Link Kanban records, canonical
-transcripts, and related work items instead of copying their contents. Add a
-history entry for an Anarlog work item only when it belongs to this repository.
+Keep history concise and append-only. Link source records instead of copying
+their contents. Do not impose a full implementation specification on a
+high-level task.
 
-**Complete when:** the roll-up is a minimal, current snapshot with a traceable
-history, not a duplicate Kanban board.
+Read [the tag reference](references/tags.md), choose up to three relevant tag
+additions, and include their creation and assignment in the authorized task
+operation. Preserve every existing tag.
+
+**Complete when:** the task expresses the high-level outcome or current project
+snapshot, with useful source links and relevant tags.
 
 ## Publish and verify
 
-An explicit `$tududi` sync or an explicit request to update Tududi authorizes
-updates to known, matching tasks. A distinct Anarlog work item requires a
-proposal and user approval before creation. An unresolved destination remains
-unpublished.
+An explicit `$tududi` invocation authorizes synchronizing its known bound task.
+An explicit Outcome Task request authorizes its unambiguous creation or update,
+including creation and assignment of relevant tags. If no Project Roll-up
+match exists during first-time binding, propose the roll-up and destination for
+one confirmation. Never create among ambiguous matches.
 
 Read [the API reference](references/api.md) before the first request to an
-installation. Use the installation's Swagger documentation as the request
-contract. Verify authentication without displaying the token, write only the
-approved delta, then re-read each changed task and confirm its UID, project,
-status, snapshot, and evidence links.
+installation. Verify authentication without displaying the token, write the
+authorized delta, then re-read each changed task and confirm its UID, project,
+status, description, source links, and tags.
 
-If authentication fails, a task is missing, or ownership is ambiguous, report
-the exact proposed change and what is needed to continue. Do not create a
-replacement roll-up task, alter Kanban status, or create/revoke API keys.
+If one operation fails, retain successful independent changes and report the
+exact partial result. After an uncertain response, read current state before
+retrying so tasks and tags are not duplicated. Do not silently replace a
+missing bound task or create/revoke API keys.
 
-Report the bound task, source records consulted, changed fields, proposed or
-created Anarlog work items, and deliberately unpublished candidates.
+Report the target task, source records consulted, changed fields and tags, and
+anything left incomplete. Distinguish questions required by this workflow from
+permission prompts enforced by the runtime.

@@ -7,11 +7,12 @@ Reusable agent skills for Codex and other supported coding agents.
 | Skill | Purpose |
 | --- | --- |
 | [`kanban-manager`](skills/kanban-manager/SKILL.md) | Manages project work in a filesystem Kanban board at `kanban/`. |
-| [`tududi`](skills/tududi/SKILL.md) | Synchronizes repository Kanban work and Anarlog commitments with Tududi. |
+| [`anarlog-updates`](skills/anarlog-updates/SKILL.md) | Applies Anarlog session decisions and commitments to projects. |
+| [`tududi`](skills/tududi/SKILL.md) | Creates and updates high-level Tududi tasks with relevant tags. |
 
 ## Install
 
-Install interactively and select one or both skills:
+Install interactively and select the skills you need:
 
 ```bash
 npx skills add maratraevskiy/skills
@@ -21,11 +22,12 @@ Install one skill explicitly:
 
 ```bash
 npx skills add maratraevskiy/skills --skill kanban-manager
+npx skills add maratraevskiy/skills --skill anarlog-updates
 npx skills add maratraevskiy/skills --skill tududi
 ```
 
-Alternatively, copy either `skills/kanban-manager` or `skills/tududi` into your
-project's `.agents/skills/` directory.
+Alternatively, copy the desired directory from `skills/` into your project's
+`.agents/skills/` directory.
 
 ## Kanban Manager overview
 
@@ -51,13 +53,27 @@ When [Matt Pocock's skills](https://github.com/mattpocock/skills) are installed
 and configured to use `kanban/` as their local tracker, use `$to-spec` for the
 canonical source spec and `$to-tickets` to split it into linked backlog tasks.
 
+## Anarlog Updates overview
+
+`anarlog-updates` retrieves or accepts a complete meeting transcript and applies its
+decisions and commitments to the project where it is invoked. It archives the
+full source, updates documentation and filesystem tasks, and asks how to route
+information about other projects. Supplying another project's path authorizes
+the relevant update there under that project's own instructions. It is
+self-contained: it prefers Anarlog Cloud MCP, falls back through cloud and local
+CLI sources, and does not require the official `anarlog` skill to be installed.
+
 ## Tududi overview
 
-`tududi` keeps a repository's filesystem Kanban work reflected in one bound
-[Tududi](https://tududi.com/) task, while preserving the local board as the
-execution record. It can also turn independently deliverable commitments from
-[Anarlog](https://anarlog.so/) meeting sessions into proposed Tududi work items.
-It never creates an ambiguous destination task or changes local Kanban status.
+`tududi` maintains high-level [Tududi](https://tududi.com/) Project Roll-ups and
+Outcome Tasks against the configured Docker or hosted instance. An explicit
+task request authorizes its routine read, write, tagging, and verification API
+calls. It reuses relevant tags or creates up to three missing ones while
+preserving existing assignments. It asks when task ownership is ambiguous or a
+new Project Roll-up needs its one-time creation decision.
+
+Runtime or sandbox permission prompts are controlled by the agent host and may
+still appear even though the skill avoids repeated conversational confirmation.
 
 ## License
 
