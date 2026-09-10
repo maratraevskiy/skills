@@ -6,16 +6,21 @@ be committed when repository conventions allow it.
 
 ```json
 {
-  "version": 1,
-  "base_url": "http://127.0.0.1:3002",
-  "token_env": "TUDUDI_API_TOKEN",
+  "version": 2,
+  "mcp_server": "tududi",
   "task_uid": "tsk_example",
   "project_uid": "prj_example"
 }
 ```
 
-`project_uid` is optional. Use a task UID rather than a title: titles can
-change and are not a reliable binding.
+`project_uid` is optional. `mcp_server` is the connection name exposed by the
+agent host. Use UIDs rather than titles: titles can change and are not reliable
+bindings. Resolve the project's numeric ID from MCP when `create_task` or
+`update_task` requires `project_id`.
+
+For a version 1 binding containing `base_url` and `token_env`, use those fields
+only to identify the intended existing MCP connection. After one unambiguous
+connection is selected, rewrite the binding as version 2 without credentials.
 
 ## Finding or creating the task
 
@@ -35,20 +40,26 @@ The task is a repository roll-up, not a clone of every local Kanban card. Keep
 the Tududi project unchanged unless the binding explicitly names a different
 project and the user has requested the correction.
 
-## Credentials and endpoint
+## MCP connection
 
-`token_env` defaults to Tududi's documented `TUDUDI_API_TOKEN`. Read that
-variable; never print its value or write it to the repository. `base_url`
-identifies the target local or hosted Tududi instance. Reuse an established
-configuration without per-session confirmation. Ask when the destination is
-missing, changed, or ambiguous.
+Tududi must be version 1.0.0 or later with `FF_ENABLE_MCP=true`, an API token,
+and an MCP connection configured in the agent host. Use stdio when the client
+can launch the Tududi server on the same machine; use streamable HTTP at
+`/api/mcp` for Docker, hosted, or remote installations.
+
+Connection configuration owns the endpoint and credential. Never copy either
+into the repository binding. Reuse the bound `mcp_server` without per-session
+confirmation. Ask when the connection is missing or multiple connections could
+own the binding. When the server is unavailable, unauthenticated, or lacks the
+required tool fields, report the setup or version incompatibility instead of
+switching transports.
 
 ## Optional macOS shell setup
 
-For a local Tududi installation, one token in the macOS Keychain is shared by
-every repository that connects to that instance; the repository binding
-contains only the task UID. Hosted instances and other machines use their own
-secure environment setup.
+For a local Tududi installation, one token in the macOS Keychain can be shared
+by MCP client configurations that connect to that instance. The repository
+binding contains no credential. Hosted instances and other machines use their
+own secure client configuration.
 
 For a Keychain item named `tududi-api-token-codex-claude`, add this single line
 to `~/.zshrc`:
@@ -61,7 +72,6 @@ Run `source ~/.zshrc` once, or open a new Terminal window. Terminal-launched
 `codex` and `claude` sessions then inherit the token automatically. A desktop
 app launched outside that shell needs its own secure environment setup.
 
-The agent must verify authentication without displaying the token before its
-first write. When the variable is absent or the check returns unauthorized,
-report the missing local setup rather than creating, resetting, or exposing a
-credential.
+The agent verifies access by calling a read-only Tududi MCP tool before its
+first write. When the connection is absent or unauthorized, report the missing
+client setup rather than creating, resetting, or exposing a credential.

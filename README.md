@@ -66,11 +66,13 @@ CLI sources, and does not require the official `anarlog` skill to be installed.
 ## Tududi overview
 
 `tududi` maintains high-level [Tududi](https://tududi.com/) Project Roll-ups and
-Outcome Tasks against the configured Docker or hosted instance. An explicit
-task request authorizes its routine read, write, tagging, and verification API
-calls. It reuses relevant tags or creates up to three missing ones while
-preserving existing assignments. It asks when task ownership is ambiguous or a
-new Project Roll-up needs its one-time creation decision.
+Outcome Tasks through a configured Tududi MCP connection. Tududi 1.0.0 or later
+must have `FF_ENABLE_MCP=true`; use HTTP for Docker, hosted, or remote instances
+and stdio for a local same-machine installation. An explicit task request
+authorizes its routine read, write, tagging, and verification tool calls. It
+reuses relevant tags or adds up to three missing ones while preserving existing
+assignments. It asks when task ownership is ambiguous or a new Project Roll-up
+needs its one-time creation decision.
 
 Runtime or sandbox permission prompts are controlled by the agent host and may
 still appear even though the skill avoids repeated conversational confirmation.

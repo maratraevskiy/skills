@@ -12,11 +12,13 @@ Local implementation steps remain in the project's own task system.
 ## Establish the binding
 
 Read `.agents/tududi.json` when it exists. Its non-secret `task_uid` identifies
-the Project Roll-up; `project_uid` optionally records its Tududi project.
+the Project Roll-up; `project_uid` optionally records its Tududi project, and
+`mcp_server` identifies the configured Tududi connection.
 
 Read [the setup reference](references/setup.md) when the binding is absent or
-incomplete or authentication is unavailable. Obtain the bearer token from
-`token_env` (default `TUDUDI_API_TOKEN`).
+incomplete, uses the legacy version 1 schema, or the MCP connection is
+unavailable. Require Tududi's task, project, search, and tag-capable task tools;
+the connected server's discovered schemas are the runtime contract.
 
 **Complete when:** an existing binding or one unambiguous match is selected, or
 the single ownership choice required to create or disambiguate it is reported.
@@ -32,8 +34,8 @@ context and established assignment.
 Read the target task and available project evidence before changing it. Ask
 only when multiple plausible matches or destinations remain. A request to
 create or update a task authorizes the necessary task reads and writes within
-the established instance; it does not need a separate confirmation per API
-call.
+the established instance; it does not need a separate confirmation per MCP
+tool call.
 
 **Complete when:** one target task is matched or the one unresolved ownership
 choice is reported.
@@ -64,8 +66,8 @@ their contents. Do not impose a full implementation specification on a
 high-level task.
 
 Read [the tag reference](references/tags.md), choose up to three relevant tag
-additions, and include their creation and assignment in the authorized task
-operation. Preserve every existing tag.
+additions, and include their assignment in the authorized task operation.
+Preserve every existing tag.
 
 **Complete when:** the task expresses the high-level outcome or current project
 snapshot, with useful source links and relevant tags.
@@ -78,8 +80,8 @@ including creation and assignment of relevant tags. If no Project Roll-up
 match exists during first-time binding, propose the roll-up and destination for
 one confirmation. Never create among ambiguous matches.
 
-Read [the API reference](references/api.md) before the first request to an
-installation. Verify authentication without displaying the token, write the
+Read [the MCP reference](references/mcp.md) before the first operation on a
+connection. Verify access through the configured Tududi MCP server, write the
 authorized delta, then re-read each changed task and confirm its UID, project,
 status, description, source links, and tags.
 
