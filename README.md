@@ -6,7 +6,7 @@ Reusable agent skills for Codex and other supported coding agents.
 
 | Skill | Purpose |
 | --- | --- |
-| [`kanban-manager`](skills/kanban-manager/SKILL.md) | Manages project work in a filesystem Kanban board at `kanban/`. |
+| [`kanban-manager`](skills/kanban-manager/SKILL.md) | Manages project work in a filesystem Kanban board at `00-kanban/`. |
 | [`anarlog-updates`](skills/anarlog-updates/SKILL.md) | Applies Anarlog session decisions and commitments to projects. |
 | [`tududi`](skills/tududi/SKILL.md) | Creates and updates high-level Tududi tasks with relevant tags. |
 
@@ -31,12 +31,12 @@ Alternatively, copy the desired directory from `skills/` into your project's
 
 ## Kanban Manager overview
 
-`kanban-manager` uses a filesystem Kanban board at `kanban/`:
+`kanban-manager` uses one workspace-root Board at `00-kanban/`:
 
 ```text
-kanban/
-├── 01-backlog/     ← create numbered task folders with only readme.md
-├── 02-planning/    ← task documents and one implementation-plan.md
+00-kanban/
+├── 01-backlog/     ← initial readme only
+├── 02-planning/    ← specs, subtasks, and one living plan
 ├── 03-progress/    ← implementation after an explicit command
 ├── 04-blocked/     ← waiting work
 ├── 05-review/      ← verification and feedback
@@ -44,14 +44,44 @@ kanban/
 └── 07-cancelled/   ← cancelled history
 ```
 
-Each task is a numbered folder such as `01-add-oauth`. Planning requires
-`02-planning`; implementation requires `03-progress` and an explicit command.
+Each Task is a numbered folder such as `01-add-oauth`. New Tasks begin in
+backlog unless you explicitly request another initial Status. Start planning in
+planning Status; implementation requires progress Status and an explicit command.
+You decide every Status move.
+
+Keep a Task's spec, individual subtasks, research, notes, and one living
+`implementation-plan.md` inside its folder. Subtasks live in `tickets/`, use local
+numbers and explicit blockers, and inherit their parent's Status permissions.
+Use `00-docs/` for shared project documentation in every project.
+
+### Complete project setup
+
+Package installation copies the skill files. Then ask your agent:
+
+> Use Kanban Manager to initialize or set up this project and establish its agent instructions.
+
+The agent creates the Board and tracker instructions and adds a pointer to the
+applicable `AGENTS.md` or `CLAUDE.md`, preserving existing rules. Repeat setup
+updates the same guidance. See [setup and migration](skills/kanban-manager/references/setup.md).
+
+For an existing `kanban/`, `.kanban/`, or `docs/` layout, the agent presents an
+exact migration map for your approval. It preserves Task contents and Status and
+updates affected references. Your configured legacy Board remains active until
+migration is approved; initializing a second Board is unnecessary.
 
 ### Matt Pocock skills
 
-When [Matt Pocock's skills](https://github.com/mattpocock/skills) are installed
-and configured to use `kanban/` as their local tracker, use `$to-spec` for the
-canonical source spec and `$to-tickets` to split it into linked backlog tasks.
+Planning uses the installed instructions for [Matt Pocock's skills](https://github.com/mattpocock/skills):
+`to-spec` for specifications and `to-tickets` for approved subtask breakdowns.
+Explicit-only skills require an explicit invocation; their installed instructions
+can otherwise serve as references for authorized planning. Both workflows publish
+inside the selected Task folder, reusing the parent Task.
+
+Each workflow works independently. When one is missing, Kanban Manager uses its
+[bundled workflow description](skills/kanban-manager/references/planning-workflows.md)
+and suggests optional installation and `/setup-matt-pocock-skills`. Configure
+that setup for the active Board and Task-owned publication. Missing skills never
+prevent planning.
 
 ## Anarlog Updates overview
 
