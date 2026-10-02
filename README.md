@@ -21,7 +21,7 @@ npx skills add maratraevskiy/skills
 Install one skill explicitly:
 
 ```bash
-npx skills add maratraevskiy/skills --skill kanban-manager
+npx skills add maratraevskiy/skills --skill kanban_manager
 npx skills add maratraevskiy/skills --skill anarlog-updates
 npx skills add maratraevskiy/skills --skill tududi
 ```
